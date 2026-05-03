@@ -32,24 +32,18 @@ def evaluate(stations):
     alerts = []
 
     for s in stations:
-        pollutants = s.get("pollutants", {})
-        pm25 = pollutants.get("PM25")
+        for pollutant, value in s.get("pollutants", {}).items():
 
-        if pm25 is None:
-            continue
+            if value is None:
+                continue
 
-        status = get_status(pm25)
-
-        if status in ["bad", "very_bad", "critical"]:
-            alerts.append({
-                "name": s["name"],
-                "pm25": pm25,
-                "status": status,
-                "source": s.get("source", {}),
-                "pollutant": "PM25"
-            })
-
-    # 🔥 ORDEN IMPORTANTE AQUÍ
-    alerts.sort(key=lambda x: x["pm25"], reverse=True)
+            if value >= 50:  # tu regla base (puedes mejorarla después)
+                alerts.append({
+                    "name": s["name"],
+                    "pollutant": pollutant,
+                    "value": value,
+                    "status": get_status(value),
+                    "source": s.get("source", {})
+                })
 
     return alerts
