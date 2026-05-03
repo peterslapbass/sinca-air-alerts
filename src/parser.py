@@ -16,6 +16,7 @@ def parse_data(raw):
             code = r.get("code", "").upper()
 
             if code == "PM25":
+                print("DEBUG RAW R:", r)
                 pm25 = float(r.get("value", 0))
 
         stations.append({
