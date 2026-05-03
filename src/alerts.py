@@ -33,20 +33,23 @@ def evaluate(stations):
 
     for s in stations:
         pollutants = s.get("pollutants", {})
-
-        # priorizamos PM25 si existe
         pm25 = pollutants.get("PM25")
 
         if pm25 is None:
             continue
 
-        if pm25 >= 50:
+        status = get_status(pm25)
+
+        if status in ["bad", "very_bad", "critical"]:
             alerts.append({
                 "name": s["name"],
                 "pm25": pm25,
-                "status": get_status(pm25),
+                "status": status,
                 "source": s.get("source", {}),
-                "pollutants": pollutants
+                "pollutant": "PM25"
             })
+
+    # 🔥 ORDEN IMPORTANTE AQUÍ
+    alerts.sort(key=lambda x: x["pm25"], reverse=True)
 
     return alerts
