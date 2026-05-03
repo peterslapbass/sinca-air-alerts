@@ -9,28 +9,39 @@ def parse_data(raw):
     stations = []
 
     for s in raw:
-        pm25 = 0.0
+        pollutants = {}
 
         for r in s.get("realtime", []):
             code = r.get("code", "").upper()
 
-            if code == "PM25":
-                info = r.get("info", {})
-                rows = info.get("rows", [])
+            info = r.get("info", {})
+            rows = info.get("rows", [])
 
-                if rows:
-                    # tomar el último valor disponible
-                    last_row = rows[-1]
-                    cols = last_row.get("c", [])
+            if not rows:
+                continue
 
-                    if len(cols) > 1:
-                        value = cols[1].get("v", 0)
-                        pm25 = float(value)
+            last_row = rows[-1]
+            cols = last_row.get("c", [])
+
+            if len(cols) > 1:
+                value = cols[1].get("v", 0)
+
+                try:
+                    pollutants[code] = float(value)
+                except:
+                    pollutants[code] = None
 
         stations.append({
             "name": s.get("nombre"),
-            "pm25": pm25
+            "pollutants": pollutants,
+
+            "source": {
+                "red": s.get("red"),
+                "empresa": s.get("empresa"),
+                "region": s.get("region"),
+                "comuna": s.get("comuna"),
+                "key": s.get("key")
+            }
         })
 
     return stations
-
