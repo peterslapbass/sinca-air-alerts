@@ -19,28 +19,21 @@ def save_state(state):
         json.dump(state, f, indent=2)
 
 def evaluate(stations):
-    prev_state = load_state()
-    new_state = {}
     alerts = []
 
     for s in stations:
-        name = s["name"]
-        pm25 = s["pm25"]
+        pollutants = s.get("pollutants", {})
 
-        status = "normal"
-        if pm25 >= PM25_CRITICAL:
-            status = "critical"
-        elif pm25 >= PM25_WARNING:
-            status = "warning"
+        pm25 = pollutants.get("PM25")
 
-        if prev_state.get(name) != status and status != "normal":
+        if pm25 is None:
+            continue
+
+        if pm25 > 50:
             alerts.append({
-                "name": name,
+                "name": s["name"],
                 "pm25": pm25,
-                "status": status
+                "source": s.get("source", {})
             })
 
-        new_state[name] = status
-
-    save_state(new_state)
     return alerts
