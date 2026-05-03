@@ -28,7 +28,7 @@ def main():
     print("RAW SAMPLE:", str(raw)[:300])
     stations = parse_data(raw)
     print("STATIONS COUNT:", len(stations))
-    print("STATIONS SAMPLE:", stations[:2])
+    print("STATIONS SAMPLE:", stations[:5])
     alerts = evaluate(stations)
     print("ALERTS:", alerts)
 
