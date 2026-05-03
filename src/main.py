@@ -18,7 +18,17 @@ def format_message(alerts):
 
     for a in alerts:
         emoji = "🚨" if a["status"] == "critical" else "⚠️"
-        lines.append(f"{emoji} {a['name']}: {a['pm25']} µg/m³")
+
+        source = a.get("source", {})
+
+        red = source.get("red", "Desconocida")
+        region = source.get("region", "")
+        comuna = source.get("comuna", "")
+
+        lines.append(
+            f"{emoji} {a['name']} ({comuna}): {a['pm25']} µg/m³\n"
+            f"📡 {red} · {region}"
+        )
 
     return "\n".join(lines)
 
