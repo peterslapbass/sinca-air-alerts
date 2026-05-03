@@ -12,29 +12,27 @@ def parse_data(raw):
         pollutants = {}
 
         for r in s.get("realtime", []):
-            code = r.get("code", "").upper()
+            code = (r.get("code") or "").upper()
+            value = None
 
-            info = r.get("info", {})
-            rows = info.get("rows", [])
+            # caso simple
+            if r.get("tableRow"):
+                value = r["tableRow"].get("value")
 
-            if not rows:
+            # fallback
+            if value is None:
                 continue
 
-            last_row = rows[-1]
-            cols = last_row.get("c", [])
+            try:
+                value = float(value)
+            except:
+                continue
 
-            if len(cols) > 1:
-                value = cols[1].get("v", 0)
-
-                try:
-                    pollutants[code] = float(value)
-                except:
-                    pollutants[code] = None
+            pollutants[code] = value
 
         stations.append({
             "name": s.get("nombre"),
             "pollutants": pollutants,
-
             "source": {
                 "red": s.get("red"),
                 "empresa": s.get("empresa"),
