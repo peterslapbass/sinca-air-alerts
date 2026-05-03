@@ -9,9 +9,18 @@ def parse_data(raw):
     stations = []
 
     for s in raw:
+        pm25 = 0.0
+
+        # recorrer mediciones reales
+        for r in s.get("realtime", []):
+            code = r.get("code", "").upper()
+
+            if code == "PM25":
+                pm25 = float(r.get("value", 0))
+
         stations.append({
-            "name": s.get("nombre", "N/A"),
-            "pm25": float(s.get("pm25") or 0)
+            "name": s.get("nombre"),
+            "pm25": pm25
         })
 
     return stations
