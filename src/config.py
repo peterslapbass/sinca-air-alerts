@@ -1,6 +1,6 @@
 import os
 
-SINCA_URL = "AQUI_ENDPOINT_REAL"
+SINCA_URL = "https://sinca.mma.gob.cl/index.php/json/listadomapa2k19"
 
 PM25_WARNING = 50
 PM25_CRITICAL = 100
