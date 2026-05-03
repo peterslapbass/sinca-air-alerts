@@ -24,8 +24,13 @@ def format_message(alerts):
 
 def main():
     raw = fetch_data()
+    print("RAW TYPE:", type(raw))
+    print("RAW SAMPLE:", str(raw)[:300])
     stations = parse_data(raw)
+    print("STATIONS COUNT:", len(stations))
+    print("STATIONS SAMPLE:", stations[:2])
     alerts = evaluate(stations)
+    print("ALERTS:", alerts)
 
     if alerts:
         msg = format_message(alerts)
