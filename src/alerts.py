@@ -32,7 +32,10 @@ def evaluate(stations):
     alerts = []
 
     for s in stations:
-        pm25 = s.get("pm25")
+        pollutants = s.get("pollutants", {})
+
+        # priorizamos PM25 si existe
+        pm25 = pollutants.get("PM25")
 
         if pm25 is None:
             continue
@@ -41,8 +44,9 @@ def evaluate(stations):
             alerts.append({
                 "name": s["name"],
                 "pm25": pm25,
-                "status": get_status(pm25),  # 🔥 CLAVE
-                "source": s.get("source", {})
+                "status": get_status(pm25),
+                "source": s.get("source", {}),
+                "pollutants": pollutants
             })
 
     return alerts
