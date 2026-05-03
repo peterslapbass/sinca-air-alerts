@@ -24,3 +24,4 @@ def parse_data(raw):
         })
 
     return stations
+
