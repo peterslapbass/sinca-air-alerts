@@ -5,10 +5,14 @@ from config import PM25_WARNING, PM25_CRITICAL
 STATE_FILE = "data/state.json"
 
 def load_state():
-    if os.path.exists(STATE_FILE):
-        with open(STATE_FILE) as f:
+    if not os.path.exists("data/state.json"):
+        return {}
+
+    try:
+        with open("data/state.json") as f:
             return json.load(f)
-    return {}
+    except json.JSONDecodeError:
+        return {}
 
 def save_state(state):
     with open(STATE_FILE, "w") as f:
