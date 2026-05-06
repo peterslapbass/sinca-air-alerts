@@ -1,62 +1,66 @@
 import requests
-import unicodedata
+import html
 from config import SINCA_URL
 
 
-# =========================
-# NORMALIZACIÓN TEXTO
-# =========================
-def normalize(text):
-    if not text:
-        return ""
-    text = str(text)
-    text = unicodedata.normalize("NFD", text)
-    text = text.encode("ascii", "ignore").decode("utf-8")
-    return text.lower()
+def normalize_code(code):
+    c = html.unescape((code or "").strip().upper())
+
+    mapping = {
+        # códigos numéricos SINCA
+        "0001": "SO2",
+        "0003": "NO2",
+        "0004": "CO",
+        "0008": "O3",
+
+        # nombres largos
+        "DIOXIDO DE NITROGENO": "NO2",
+        "DIÓXIDO DE NITRÓGENO": "NO2",
+
+        "DIOXIDO DE AZUFRE": "SO2",
+        "DIÓXIDO DE AZUFRE": "SO2",
+
+        "MONOXIDO DE CARBONO": "CO",
+        "MONÓXIDO DE CARBONO": "CO",
+
+        "OZONO": "O3",
+
+        # MP
+        "MP-2,5": "PM25",
+        "MP2,5": "PM25",
+        "PM25": "PM25",
+
+        "MP-10": "PM10",
+        "PM10": "PM10",
+    }
+
+    return mapping.get(c, c)
 
 
-# =========================
-# DETECCIÓN CONTAMINANTES (ESTILO FRONTEND)
-# =========================
-def get_pollutant(name):
-    n = normalize(name)
-
-    # MP
-    if "mp-2" in n or "pm25" in n or "pm2" in n:
-        return "PM25"
-    if "mp-10" in n or "pm10" in n:
-        return "PM10"
-
-    # NO2
-    if "dioxido de nitrogeno" in n or "no2" in n:
-        return "NO2"
-
-    # SO2
-    if "dioxido de azufre" in n or "so2" in n:
-        return "SO2"
-
-    # O3
-    if "ozono" in n or "o3" in n:
-        return "O3"
-
-    # CO
-    if "monoxido de carbono" in n or n.strip() == "co":
-        return "CO"
-
-    return None
-
-
-# =========================
-# FETCH
-# =========================
 def fetch_data():
     response = requests.get(SINCA_URL, timeout=10)
     return response.json()
 
 
-# =========================
-# PARSER PRINCIPAL
-# =========================
+def extract_value(r):
+    """
+    Intenta sacar el valor desde distintas estructuras posibles
+    """
+    # 1. estructura común
+    if r.get("tableRow") and r["tableRow"].get("value") is not None:
+        return r["tableRow"]["value"]
+
+    # 2. algunas veces viene directo
+    if r.get("value") is not None:
+        return r["value"]
+
+    # 3. fallback raro (por si cambia API)
+    if isinstance(r.get("tableRow"), dict):
+        return r["tableRow"].get("valor")
+
+    return None
+
+
 def parse_data(raw):
     stations = []
 
@@ -64,30 +68,11 @@ def parse_data(raw):
         pollutants = {}
 
         for r in s.get("realtime", []):
-            print(r.get("code"), r.get("name"))
-            # 🔥 usar TODOS los posibles campos
-            raw_name = (
-                r.get("name")
-                or r.get("parameter")
-                or r.get("code")
-                or ""
-            )
 
-            code = get_pollutant(raw_name)
+            raw_code = r.get("code") or r.get("name") or ""
+            code = normalize_code(raw_code)
 
-            # si no se reconoce contaminante → ignorar
-            if not code:
-                continue
-
-            value = None
-
-            # ✅ valor directo (mejor caso)
-            if r.get("tableRow"):
-                value = r["tableRow"].get("value")
-
-            # ⚠️ fallback (por si SINCA cambia formato)
-            if value is None and r.get("value") is not None:
-                value = r.get("value")
+            value = extract_value(r)
 
             if value is None:
                 continue
