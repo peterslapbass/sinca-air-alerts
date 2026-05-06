@@ -64,7 +64,7 @@ def parse_data(raw):
         pollutants = {}
 
         for r in s.get("realtime", []):
-
+            print(r.get("code"), r.get("name"))
             # 🔥 usar TODOS los posibles campos
             raw_name = (
                 r.get("name")
