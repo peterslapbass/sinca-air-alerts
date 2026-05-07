@@ -53,6 +53,7 @@ def main():
         )
         
     print(message)
+    send_telegram(message)
     #print(ranking[:5])
     print("STATIONS COUNT:", len(stations))
     print("STATIONS SAMPLE:", stations[:5])
