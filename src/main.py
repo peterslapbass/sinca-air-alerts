@@ -39,12 +39,32 @@ def main():
 
     stations = parse_data(raw)
 
-    # Rankings automáticos
-    for pollutant in POLLUTANTS:
+    # =========================
+    # ALERTAS PRIMERO
+    # =========================
+
+    alerts = evaluate(stations)
+
+    if alerts:
+
+        alert_msg = format_alert_message(alerts)
+
+        print(alert_msg)
+        send_telegram(alert_msg)
+
+    else:
+        print("Sin nuevas alertas")
+
+    # =========================
+    # RANKINGS DESPUÉS
+    # =========================
+
+    pollutants = ["PM25", "PM10", "NO2", "SO2", "O3", "CO"]
+
+    for pollutant in pollutants:
 
         ranking = build_ranking(stations, pollutant)
 
-        # si no hay datos para ese contaminante
         if not ranking:
             continue
 
@@ -55,22 +75,7 @@ def main():
         )
 
         print(ranking_msg)
-
         send_telegram(ranking_msg)
-
-    # Alertas
-    alerts = evaluate(stations)
-
-    if alerts:
-
-        alert_msg = format_alert_message(alerts)
-
-        print(alert_msg)
-
-        send_telegram(alert_msg)
-
-    else:
-        print("Sin nuevas alertas")
 
 
 if __name__ == "__main__":
