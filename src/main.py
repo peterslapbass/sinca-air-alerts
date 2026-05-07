@@ -1,23 +1,31 @@
 from parser import fetch_data, parse_data
 from alerts import evaluate
-import requests
-from config import TELEGRAM_TOKEN, CHAT_ID
 from ranking import build_ranking
 
+import requests
+
+from config import TELEGRAM_TOKEN, CHAT_ID
+
+
 def send_telegram(message):
+
     if not TELEGRAM_TOKEN or not CHAT_ID:
         return
 
     url = f"https://api.telegram.org/bot{TELEGRAM_TOKEN}/sendMessage"
+
     requests.post(url, json={
         "chat_id": CHAT_ID,
         "text": message
     })
 
-def format_message(alerts):
+
+def format_alerts(alerts):
+
     lines = ["🚨 Alertas de calidad del aire:\n"]
 
     for a in alerts:
+
         emoji = "🚨" if a["status"] == "critical" else "⚠️"
 
         pollutant = a["pollutant"]
@@ -28,44 +36,71 @@ def format_message(alerts):
         region = source.get("region", "")
 
         lines.append(
-            f"{emoji} {a['name']} ({pollutant}): {value} µg/m³\n"
+            f"{emoji} {a['name']} ({pollutant}): "
+            f"{value} µg/m³\n"
             f"📡 {red} · {region}"
+        )
+
+    return "\n\n".join(lines)
+
+
+def format_ranking(stations, pollutant="PM25", top=5):
+
+    ranking = build_ranking(stations, pollutant)
+
+    if not ranking:
+        return None
+
+    lines = [f"🏆 Top {pollutant} Chile\n"]
+
+    for i, r in enumerate(ranking[:top], 1):
+
+        lines.append(
+            f"{i}. {r['name']} — "
+            f"{r['value']} µg/m³ "
+            f"({r['ratio']:.2f}x)"
         )
 
     return "\n".join(lines)
 
+
 def main():
+
     raw = fetch_data()
-    print("RAW TYPE:", type(raw))
-    print("RAW SAMPLE:", str(raw)[:300])
+
     stations = parse_data(raw)
-    ranking = build_ranking(stations, "PM25")
-    top5 = ranking[:5]
-    
-    message = "🏆 Top PM2.5 Chile\n\n"
-    
-    for i, r in enumerate(top5, 1):
-    
-        message += (
-            f"{i}. {r['name']} — "
-            f"{r['value']} µg/m³ "
-            f"({r['ratio']:.2f}x)\n"
-        )
-        
-    print(message)
-    send_telegram(message)
-    #print(ranking[:5])
+
     print("STATIONS COUNT:", len(stations))
-    print("STATIONS SAMPLE:", stations[:5])
+
+    # =========================
+    # RANKING
+    # =========================
+
+    ranking_msg = format_ranking(stations, "PM25")
+
+    if ranking_msg:
+        print(ranking_msg)
+        send_telegram(ranking_msg)
+
+    # =========================
+    # ALERTS
+    # =========================
+
     alerts = evaluate(stations)
+
     print("ALERTS:", alerts)
 
     if alerts:
-        msg = format_message(alerts)
-        print(msg)
-        send_telegram(msg)
+
+        alerts_msg = format_alerts(alerts)
+
+        print(alerts_msg)
+
+        send_telegram(alerts_msg)
+
     else:
         print("Sin nuevas alertas")
+
 
 if __name__ == "__main__":
     main()
