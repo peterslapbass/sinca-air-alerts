@@ -10,6 +10,16 @@ import requests
 from config import TELEGRAM_TOKEN, CHAT_ID
 
 
+POLLUTANTS = [
+    "PM25",
+    "PM10",
+    "NO2",
+    "SO2",
+    "CO",
+    "O3"
+]
+
+
 def send_telegram(message):
 
     if not TELEGRAM_TOKEN or not CHAT_ID:
@@ -29,17 +39,24 @@ def main():
 
     stations = parse_data(raw)
 
-    # Ranking PM2.5
-    ranking = build_ranking(stations, "PM25")
+    # Rankings automáticos
+    for pollutant in POLLUTANTS:
 
-    ranking_msg = format_ranking_message(
-        ranking,
-        pollutant="PM25",
-        top=5
-    )
+        ranking = build_ranking(stations, pollutant)
 
-    print(ranking_msg)
-    send_telegram(ranking_msg)
+        # si no hay datos para ese contaminante
+        if not ranking:
+            continue
+
+        ranking_msg = format_ranking_message(
+            ranking,
+            pollutant=pollutant,
+            top=5
+        )
+
+        print(ranking_msg)
+
+        send_telegram(ranking_msg)
 
     # Alertas
     alerts = evaluate(stations)
@@ -49,6 +66,7 @@ def main():
         alert_msg = format_alert_message(alerts)
 
         print(alert_msg)
+
         send_telegram(alert_msg)
 
     else:
