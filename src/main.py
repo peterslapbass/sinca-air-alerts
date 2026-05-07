@@ -2,6 +2,7 @@ from parser import fetch_data, parse_data
 from alerts import evaluate
 import requests
 from config import TELEGRAM_TOKEN, CHAT_ID
+from ranking import build_ranking
 
 def send_telegram(message):
     if not TELEGRAM_TOKEN or not CHAT_ID:
@@ -38,6 +39,8 @@ def main():
     print("RAW TYPE:", type(raw))
     print("RAW SAMPLE:", str(raw)[:300])
     stations = parse_data(raw)
+    ranking = build_ranking(stations, "PM25")
+    print(ranking[:5])
     print("STATIONS COUNT:", len(stations))
     print("STATIONS SAMPLE:", stations[:5])
     alerts = evaluate(stations)
