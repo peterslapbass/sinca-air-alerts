@@ -25,7 +25,7 @@ python src/main.py
 
 ## ⏱ Automatización
 
-El proyecto incluye GitHub Actions para ejecución cada 30 minutos.
+El proyecto incluye GitHub Actions para ejecución cada 60 minutos.
 
 ## 📊 Variables evaluadas
 
