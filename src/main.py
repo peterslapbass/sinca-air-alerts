@@ -40,7 +40,20 @@ def main():
     print("RAW SAMPLE:", str(raw)[:300])
     stations = parse_data(raw)
     ranking = build_ranking(stations, "PM25")
-    print(ranking[:5])
+    top5 = ranking[:5]
+    
+    message = "🏆 Top PM2.5 Chile\n\n"
+    
+    for i, r in enumerate(top5, 1):
+    
+        message += (
+            f"{i}. {r['name']} — "
+            f"{r['value']} µg/m³ "
+            f"({r['ratio']:.2f}x)\n"
+        )
+        
+    print(message)
+    #print(ranking[:5])
     print("STATIONS COUNT:", len(stations))
     print("STATIONS SAMPLE:", stations[:5])
     alerts = evaluate(stations)
