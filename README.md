@@ -13,21 +13,6 @@ Sistema automático de alertas de calidad del aire basado en datos del SINCA (Ch
 
 1. Clonar repo
 2. Instalar dependencias:
-# SINCA Air Alerts 🇨🇱
-
-Sistema automático de alertas de calidad del aire basado en datos del SINCA (Chile).
-
-## 🚀 Qué hace
-
-- Consume datos en tiempo real desde SINCA
-- Evalúa niveles de PM2.5
-- Detecta cambios de estado (normal → alerta)
-- Envía notificaciones (opcional vía Telegram)
-
-## ⚙️ Configuración
-
-1. Clonar repo
-2. Instalar dependencias:
 pip install -r requirements.txt
 
 3. Configurar variables de entorno:
