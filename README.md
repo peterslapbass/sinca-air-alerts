@@ -1,6 +1,7 @@
 # SINCA Air Alerts 🇨🇱
 
 Sistema automático de alertas de calidad del aire basado en datos del SINCA (Chile).
+BOT: https://t.me/air_alerts_cl_bot
 
 ## 🚀 Qué hace
 
