@@ -52,3 +52,22 @@ El proyecto incluye GitHub Actions para ejecución cada 10 minutos.
 - Soporte multi-contaminante
 - Panel web de alertas
 - Predicción de tendencias
+
+## Bot interactivo (experimental)
+
+El proyecto incluye un bot.py opcional para interacción mediante comandos de Telegram.
+
+Ejemplo:
+
+/top_pm25  
+/top_pm10
+
+El bot requiere ejecución persistente (run_polling()), por lo que no está habilitado en GitHub Actions por defecto.
+
+Puede desplegarse en:
+- Render
+- Railway
+- VPS
+- Raspberry Pi
+
+Mientras tanto, main.py mantiene el sistema automático de alertas y rankings mediante GitHub Actions.
