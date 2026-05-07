@@ -1,9 +1,12 @@
 from parser import fetch_data, parse_data
 from alerts import evaluate
 from ranking import build_ranking
+from messages import (
+    format_alert_message,
+    format_ranking_message
+)
 
 import requests
-
 from config import TELEGRAM_TOKEN, CHAT_ID
 
 
@@ -20,83 +23,33 @@ def send_telegram(message):
     })
 
 
-def format_alerts(alerts):
-
-    lines = ["🚨 Alertas de calidad del aire:\n"]
-
-    for a in alerts:
-
-        emoji = "🚨" if a["status"] == "critical" else "⚠️"
-
-        pollutant = a["pollutant"]
-        value = a["value"]
-
-        source = a.get("source", {})
-        red = source.get("red", "")
-        region = source.get("region", "")
-
-        lines.append(
-            f"{emoji} {a['name']} ({pollutant}): "
-            f"{value} µg/m³\n"
-            f"📡 {red} · {region}"
-        )
-
-    return "\n\n".join(lines)
-
-
-def format_ranking(stations, pollutant="PM25", top=5):
-
-    ranking = build_ranking(stations, pollutant)
-
-    if not ranking:
-        return None
-
-    lines = [f"🏆 Top {pollutant} Chile\n"]
-
-    for i, r in enumerate(ranking[:top], 1):
-
-        lines.append(
-            f"{i}. {r['name']} — "
-            f"{r['value']} µg/m³ "
-            f"({r['ratio']:.2f}x)"
-        )
-
-    return "\n".join(lines)
-
-
 def main():
 
     raw = fetch_data()
 
     stations = parse_data(raw)
 
-    print("STATIONS COUNT:", len(stations))
+    # Ranking PM2.5
+    ranking = build_ranking(stations, "PM25")
 
-    # =========================
-    # RANKING
-    # =========================
+    ranking_msg = format_ranking_message(
+        ranking,
+        pollutant="PM25",
+        top=5
+    )
 
-    ranking_msg = format_ranking(stations, "PM25")
+    print(ranking_msg)
+    send_telegram(ranking_msg)
 
-    if ranking_msg:
-        print(ranking_msg)
-        send_telegram(ranking_msg)
-
-    # =========================
-    # ALERTS
-    # =========================
-
+    # Alertas
     alerts = evaluate(stations)
-
-    print("ALERTS:", alerts)
 
     if alerts:
 
-        alerts_msg = format_alerts(alerts)
+        alert_msg = format_alert_message(alerts)
 
-        print(alerts_msg)
-
-        send_telegram(alerts_msg)
+        print(alert_msg)
+        send_telegram(alert_msg)
 
     else:
         print("Sin nuevas alertas")
